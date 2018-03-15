@@ -131,7 +131,7 @@ public class GPSTracker extends Service implements LocationListener {
         return longitude;
     }
 
-    public boolean isCanGetLocation(){
+    public boolean canGetLocation(){
         return this.canGetLocation;
     }
 

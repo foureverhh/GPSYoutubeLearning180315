@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">GPSYoutubeLearning180315</string>
+    <string name="get_location">Get location</string>
+    <string name="fetching_location">Fetching location</string>
 </resources>
