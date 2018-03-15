@@ -1,14 +1,18 @@
 package com.nackademin.foureverhh.gpsyoutubelearning180315;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 
 /**
  * Created by foureverhh on 2018-03-15.
@@ -36,6 +40,69 @@ public class GPSTracker extends Service implements LocationListener {
         getLocation(); //  To check whether Gps is enabled, whether network is enabled, and permission is enabled
     }
 
+    public Location getLocation() {
+        try{
+
+            //Check location manager later...............
+            //To get the support from system
+            locationManager = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
+            //To check whether GPS is on
+            isGpsEnabled = locationManager.isProviderEnabled(locationManager.GPS_PROVIDER);
+            //To check whether Network is working
+            isNetworkEnabled = locationManager.isProviderEnabled(locationManager.NETWORK_PROVIDER);
+
+            if(!isGpsEnabled && !isNetworkEnabled){
+                //If both GPS and network do not work
+
+            }else{
+                this.canGetLocation = true;
+                //To handle when not granted GPS and network permission
+                //Using Network as the provider of location service
+                if(isNetworkEnabled){
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION )!= PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION )!= PackageManager.PERMISSION_GRANTED){
+                        return null;
+                    }
+                    //To get update as the time and distance requires
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,MIN_TIME_BW_UPDATE,MIN_DISTANCE_FOR_UPDATE,this);
+
+                    if(locationManager!=null){
+                        location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                        if(location != null){
+                            latitude = location.getLatitude();
+                            longitude = location.getLongitude();
+
+                        }
+                    }
+                }
+                //Using GPS as the provider of location service
+                if(isGpsEnabled){
+                    if(ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                            ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                        return null;
+                    }
+                    if(location == null){
+
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,MIN_TIME_BW_UPDATE,MIN_DISTANCE_FOR_UPDATE,this);
+
+                        if(locationManager != null){
+                            location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+                            if(location != null) {
+                                longitude = location.getLongitude();
+                                latitude = location.getLatitude();
+                            }
+                        }
+                    }
+                }
+
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return location;
+    }
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
