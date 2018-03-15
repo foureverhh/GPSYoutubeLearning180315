@@ -2,8 +2,10 @@ package com.nackademin.foureverhh.gpsyoutubelearning180315;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -11,6 +13,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 
@@ -103,10 +106,70 @@ public class GPSTracker extends Service implements LocationListener {
         }
         return location;
     }
+
+    public void stopUsingGPS(){
+        if(locationManager != null){
+            if(ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                return;
+            }
+            locationManager.removeUpdates(GPSTracker.this);
+        }
+    }
+
+    public double getLatitude(){
+        if(location != null){
+            latitude = location.getLatitude();
+        }
+        return latitude;
+    }
+
+    public double getLongitude(){
+        if(location != null){
+            longitude = location.getLongitude();
+        }
+        return longitude;
+    }
+
+    public boolean isCanGetLocation(){
+        return this.canGetLocation;
+    }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    public void showSettingsAlert(){
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
+
+        //Set dialog title
+        alertDialog.setTitle("GPS is setting");
+
+        //Set dialog message
+        alertDialog.setMessage("GPS is not enable. Do you want to go to settings menu?");
+
+        //On pressing settings button
+        alertDialog.setPositiveButton("Setting", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                mContext.startActivity(intent);
+            }
+        });
+
+        //On pressing cancel button
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        //Show alert message
+        alertDialog.show();
     }
 
     @Override
